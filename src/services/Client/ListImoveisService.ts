@@ -3,6 +3,8 @@ class ListImoveisService {
     async execute() {
 
         const imoveis = await prismaClient.w_imovel.findMany({
+            take: 30,
+            skip: 0,
             select: {
                 ref: true,
                 regiao: true,
@@ -63,9 +65,6 @@ class ListImoveisService {
                 endereco: true
             }
         })
-
-        console.log(imoveis)
-
 
         return ({
             imoveis: imoveis,
