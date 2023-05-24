@@ -1,0 +1,410 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model i_bairro {
+  codbairro Int    @id
+  codcidade Int
+  maxcep    String @db.VarChar(8)
+  descricao String @db.VarChar(72)
+  nomeuso   String @db.VarChar(72)
+  situacao  String @db.VarChar(10)
+}
+
+model i_cidade {
+  codcidade   Int     @id
+  codestado   Int
+  descricao   String  @db.VarChar(50)
+  cep         String  @db.VarChar(8)
+  situacao    String  @db.VarChar(10)
+  siglaestado String  @db.VarChar(2)
+  imovel      Boolean
+}
+
+model i_estado {
+  codestado Int    @id
+  codpais   Int
+  descricao String @db.VarChar(50)
+  sigla     String @db.VarChar(2)
+  situacao  String @db.VarChar(10)
+}
+
+model i_pais {
+  codpais   Int    @id
+  descricao String @db.VarChar(50)
+  situacao  String @db.VarChar(10)
+}
+
+model i_regiao {
+  codregiao Int    @id
+  codcidade Int
+  macrozona String @db.VarChar(20)
+  zona      String @db.VarChar(20)
+  descricao String @db.VarChar(50)
+  situacao  String @db.VarChar(10)
+
+  @@unique([codcidade, descricao], map: "codcidade")
+}
+
+model i_regiaobairro {
+  codregiao Int
+  codbairro BigInt
+  situacao  String @db.VarChar(10)
+
+  @@id([codregiao, codbairro])
+  @@index([codbairro], map: "codbairro")
+}
+
+model nido_migration {
+  id        Int      @id @default(autoincrement())
+  migration String   @db.VarChar(255)
+  date      DateTime @db.DateTime(0)
+
+  @@index([date], map: "date")
+}
+
+model w_agencia {
+  codagencia  String @id @db.VarChar(2)
+  nomeempresa String @db.VarChar(50)
+  nome        String @db.VarChar(50)
+  razaosocial String @db.VarChar(70)
+  cep         String @db.VarChar(8)
+  endereco    String @db.VarChar(70)
+  numero      Int
+  bairro      String @db.VarChar(50)
+  complemento String @db.VarChar(50)
+  cidade      String @db.VarChar(50)
+  estado      String @db.VarChar(2)
+  ddd1        String @db.VarChar(2)
+  telefone1   String @db.VarChar(10)
+  ddd2        String @db.VarChar(2)
+  telefone2   String @db.VarChar(10)
+  dddfax      String @db.VarChar(2)
+  fax         String @db.VarChar(10)
+  email       String @db.VarChar(50)
+  creci       String @db.VarChar(20)
+  situacao    String @db.VarChar(10)
+}
+
+model w_classificacao {
+  codclassificacao Int    @id
+  descricao        String @db.VarChar(100)
+  situacao         String @db.VarChar(10)
+}
+
+model w_comunicacao {
+  id            Int                  @id @default(autoincrement())
+  tipocomunicao Int                  @db.TinyInt
+  dados_contato Bytes                @db.Blob
+  status        w_comunicacao_status
+  datahora      DateTime             @db.DateTime(0)
+
+  @@index([datahora], map: "datahora")
+  @@index([status], map: "status")
+  @@index([tipocomunicao], map: "tipocomunicao")
+}
+
+model w_foto {
+  ref      String  @db.VarChar(12)
+  seq      Int
+  titulo   String  @db.VarChar(30)
+  foto     Bytes
+  destaque Boolean
+
+  @@id([ref, seq])
+  @@index([ref], map: "ref")
+}
+
+model w_imovel {
+  ref                              String   @id @db.VarChar(12)
+  dataatualizacao                  DateTime @db.DateTime(0)
+  datacadastro                     DateTime @db.DateTime(0)
+  dataalteracaofoto                DateTime @db.DateTime(0)
+  dataalteracaofoto_empreendimento DateTime @db.DateTime(0)
+  datahora_pub                     DateTime @db.DateTime(0)
+  codagencia                       String   @db.VarChar(2)
+  codagencia_publicacao            String   @db.VarChar(2)
+  codtipoimovel                    Int
+  codtiposimplificado              Int
+  tipoimovel                       String   @db.VarChar(64)
+  tiposimplificado                 String   @db.VarChar(64)
+  codtiponegocio                   String   @db.VarChar(1)
+  codtipoutilizacao                String   @db.Char(1)
+  residencial                      String   @db.Char(1)
+  comercial                        String   @db.Char(1)
+  rural                            String   @db.Char(1)
+  industrial                       String   @db.Char(1)
+  codtipoorigem                    Int
+  lancamento                       Int
+  cep                              String   @db.VarChar(8)
+  logradouro                       String   @db.VarChar(25)
+  endereco                         String   @db.VarChar(512)
+  numero                           Bytes    @db.Blob
+  codcidade                        Int
+  cidade                           String   @db.VarChar(64)
+  estado                           String   @db.Char(2)
+  regiao                           String   @db.VarChar(72)
+  bairro                           String   @db.VarChar(72)
+  codbairro                        Int
+  codregiao1                       String   @db.VarChar(72)
+  codregiao2                       String   @db.VarChar(72)
+  codregiao3                       String   @db.VarChar(72)
+  valor                            Float
+  disponivelvenda                  Boolean
+  valorvenda                       Float
+  valorvendam2                     Float    @db.Float
+  disponivellocacao                Boolean
+  valorlocacao                     Float
+  periodolocacao                   String   @db.VarChar(32)
+  valorlocacaom2                   Float    @db.Float
+  disponiveltemporada              Boolean
+  valortemporada                   Float
+  qtdepessoas                      Int
+  condominio                       Float
+  iptu                             Float
+  tipoiptu                         String   @db.VarChar(10)
+  dormitorios                      Int      @db.SmallInt
+  suites                           Int      @db.SmallInt
+  vagas                            Int      @db.SmallInt
+  areatotal                        Int
+  areautil                         Int
+  metragem                         String   @db.VarChar(20)
+  promocao                         String   @db.Text
+  titulo                           String   @db.Text
+  detunidade                       String   @db.Text
+  detcondominio                    String   @db.Text
+  tag                              String   @db.Text
+  comfoto                          Boolean
+  quantidade_fotos                 Int
+  comtexto                         Boolean
+  comfinanciamento                 Boolean
+  valorentrada                     Float
+  valorparcela                     Float
+  situacao                         Int
+  situacao_imovel                  String   @db.VarChar(20)
+  salas                            Int      @db.SmallInt
+  codprofissional                  String   @db.VarChar(6)
+  empreendimento                   String   @db.VarChar(150)
+  complemento                      String   @db.VarChar(150)
+  video                            String   @db.VarChar(1024)
+  latitude                         Float
+  longitude                        Float
+  condpagamento                    String   @db.Text
+  imediacoes                       String   @db.VarChar(50)
+  codclassificacao                 Int
+  banheiros                        Int
+  exclusividade                    Boolean
+  plantao                          Boolean
+  remanescente                     Boolean
+  aceitapermuta                    Boolean
+  possuirenda                      Boolean
+  edificio                         String   @db.VarChar(150)
+  situacao_mobilia                 String   @db.VarChar(32)
+  codigo_anterior                  String   @db.VarChar(20)
+  textoimpressao                   String   @db.VarChar(2048)
+  regra_sistema                    String   @db.VarChar(3)
+  imovel_desabilitado              Boolean  @default(false)
+  caracteristica_unidade           String   @db.VarChar(512)
+  caracteristica_condominio        String   @db.VarChar(512)
+
+  @@index([codbairro], map: "codbairro")
+  @@index([codclassificacao], map: "codclassificacao")
+  @@index([codigo_anterior], map: "codigo_anterior")
+  @@index([codtipoimovel], map: "codtipoimovel")
+  @@index([codtipoorigem], map: "codtipoorigem")
+  @@index([datacadastro], map: "datacadastro")
+  @@index([disponivellocacao], map: "disponivellocacao")
+  @@index([disponivelvenda], map: "disponivelvenda")
+  @@index([situacao], map: "situacao")
+}
+
+model w_imovel_poi_distancia {
+  ref       String @db.VarChar(12)
+  tipo      String @db.VarChar(48)
+  nome      String @db.VarChar(72)
+  distancia Float
+
+  @@id([ref, tipo, nome])
+  @@index([nome], map: "nome")
+  @@index([ref], map: "ref")
+  @@index([tipo], map: "tipo")
+  @@index([tipo, nome], map: "tipo_nome")
+}
+
+model w_imovel_pois {
+  ref  String @id @db.VarChar(12)
+  pois Bytes  @db.Blob
+}
+
+model w_imovelprofissional {
+  ref             String @db.VarChar(12)
+  relacao         String @db.VarChar(60)
+  codprofissional String @db.VarChar(20)
+  codprofagencia  String @db.VarChar(20)
+  codprofequipe   String @db.VarChar(20)
+  ordem           Int
+
+  @@id([ref, relacao, codprofissional])
+  @@index([ref], map: "ref")
+}
+
+model w_lead {
+  id                    Int              @id @default(autoincrement())
+  tipo_lead             w_lead_tipo_lead @default(Unidade)
+  referencia            String           @db.Char(50)
+  codagencia_publicacao String           @db.VarChar(2)
+  tipoimovel            Int
+  codtipoutilizacao     String           @db.Char(1)
+  codregiao             String           @db.VarChar(72)
+  disponivelvenda       Int              @db.TinyInt
+  valorvenda            Float
+  disponivellocacao     Int              @db.TinyInt
+  valorlocacao          Float
+  cliente               String           @db.VarChar(100)
+  email                 String           @db.VarChar(200)
+  telefone              String           @db.Char(20)
+  celular               String           @db.Char(20)
+  gostaria_de           String           @db.VarChar(200)
+  tipouso               String           @db.VarChar(200)
+  mensagem              String           @db.Text
+  datahora              DateTime         @db.DateTime(0)
+  status                w_lead_status
+
+  @@index([datahora], map: "datahora")
+  @@index([status], map: "status")
+}
+
+model w_link {
+  ref    String @db.VarChar(12)
+  ordem  Int
+  titulo String @db.VarChar(64)
+  tipo   String @db.VarChar(64)
+  url    String @db.VarChar(20148)
+
+  @@id([ref, ordem])
+  @@index([ref], map: "ref")
+}
+
+model w_pregao {
+  ref          String   @id @db.VarChar(13)
+  ref_imovel   String   @db.VarChar(13)
+  tipo_negocio String   @db.VarChar(10)
+  valorpregao  Float
+  texto        String   @db.Text
+  datahora     DateTime @db.DateTime(0)
+  validade     DateTime @db.DateTime(0)
+}
+
+model w_pregaoprofissional {
+  ref             String @id @db.VarChar(13)
+  codprofissional String @db.VarChar(20)
+  codprofagencia  String @db.VarChar(20)
+  codprofequipe   String @db.VarChar(20)
+}
+
+model w_profissional {
+  codagencia      String @db.VarChar(2)
+  codprofissional String @id @db.VarChar(6)
+  nomeuso         String @db.VarChar(40)
+  foto            Bytes  @db.MediumBlob
+  obs             String @db.Text
+  ddd1            String @db.VarChar(3)
+  fone1           String @db.VarChar(10)
+  ddd2            String @db.VarChar(3)
+  fone2           String @db.VarChar(10)
+  email1          String @db.VarChar(50)
+  email2          String @db.VarChar(50)
+  email3          String @db.VarChar(50)
+  dddcelular      String @db.VarChar(3)
+  celular         String @db.VarChar(10)
+  codequipe       Int
+  equipenome      String @db.VarChar(50)
+  nextel_id       String @db.VarChar(20)
+  creci           String @db.VarChar(10)
+  ramal           String @db.VarChar(5)
+  idiomas         String @db.VarChar(50)
+}
+
+model w_tag {
+  codtag         Int    @id
+  codtipotag     Int
+  titulo         String @db.VarChar(100)
+  descricao      String @db.Text
+  palavras_chave String @db.Text
+  slug           String @db.VarChar(100)
+  situacao       String @db.VarChar(10)
+}
+
+model w_tipoimovel {
+  codtipoimovel       Int    @id
+  descricao           String @db.VarChar(50)
+  descricao_slug      String @db.VarChar(50)
+  codtiposimplificado Int
+  validacao           String @db.Char(1)
+  situacao            String @db.VarChar(10)
+  publicavel          Int    @db.TinyInt
+}
+
+model w_tipoorigem {
+  codtipoorigem Int    @id
+  descricao     String @db.VarChar(50)
+  situacao      String @db.VarChar(10)
+}
+
+model w_tiposimplificado {
+  codtiposimplificado Int    @id
+  descricao           String @db.VarChar(50)
+  descricao_slug      String @db.VarChar(50)
+  situacao            String @db.VarChar(10)
+}
+
+model w_tipotag {
+  codtipotag Int    @id
+  descricao  String @db.Text
+  slug       String @db.VarChar(100)
+  situacao   String @db.VarChar(10)
+}
+
+model web_site {
+  id                       Int     @id @default(autoincrement())
+  codagencia               String? @db.Char(2)
+  modelo_site              Int?
+  texto_home               String? @db.MediumText
+  texto_empresa            String? @db.MediumText
+  texto_faleconosco        String? @db.Text
+  texto_lgpd               String? @db.Text
+  titulo_home              String? @db.VarChar(64)
+  informacoes_principais   Bytes?  @db.Blob
+  endereco                 Bytes?  @db.Blob
+  contatos                 Bytes?  @db.Blob
+  informacoes_promocionais Bytes?  @db.Blob
+  paginas_extra            Bytes?
+  informacoes_seo          Bytes   @db.Blob
+  informacoes_google       Bytes?  @db.Blob
+  image_path               String? @db.VarChar(255)
+  favicon                  String? @db.VarChar(255)
+  banner                   String? @db.VarChar(4092)
+  imagem_contato           String? @db.VarChar(255)
+}
+
+enum w_comunicacao_status {
+  Pendente
+  Processado
+  Erro
+}
+
+enum w_lead_tipo_lead {
+  Unidade
+  Empreendimento
+}
+
+enum w_lead_status {
+  Pendente
+  Processado
+  Erro
+}
