@@ -63,12 +63,35 @@ class ListImoveisService {
                 imediacoes: true,
                 iptu: true,
                 endereco: true
+            },
+        })
+
+        let imoveisArray = []
+        let imoveisObject = {}
+
+        imoveis.map((item) => {
+            imoveisObject[item.ref] = {...item, image: null}
+            imoveisArray.push({
+                ref: {
+                    contains: item.ref
+                }
+            })
+        })
+
+        let images = await prismaClient.w_foto.findMany({
+            where: {
+                OR: imoveisArray
             }
         })
 
-        return ({
-            imoveis: imoveis,
+        images.map((item) => {
+            if (!imoveisObject[item.ref].image) {
+                imoveisObject[item.ref].image = item.foto.toString().replace('http://static.nidoimovel.com.br', 'https://s3.amazonaws.com/static.nidoimovel.com.br')
+        
+            }
         })
+
+        return Object.values(imoveisObject)
     }
 }
 
