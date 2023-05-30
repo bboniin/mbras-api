@@ -1,16 +1,10 @@
 import prismaClient from '../../prisma'
+class ListImoveisService {
+    async execute() {
 
-interface Imovel{
-    ref: string;
-}
-
-class GetImovelService {
-    async execute({ref}: Imovel) {
-
-        let imovel = await prismaClient.w_imovel.findFirst({
-            where: {
-                ref: ref
-            },
+        const imoveis = await prismaClient.w_imovel.findMany({
+            take: 30,
+            skip: 0,
             select: {
                 valorentrada: true,
                 ref: true,
@@ -105,24 +99,33 @@ class GetImovelService {
             },
         })
 
-        imovel["images"] = []
+        let imoveisArray = []
+        let imoveisObject = {}
+
+        imoveis.map((item) => {
+            imoveisObject[item.ref] = {...item, image: null}
+            imoveisArray.push({
+                ref: {
+                    contains: item.ref
+                }
+            })
+        })
 
         let images = await prismaClient.w_foto.findMany({
             where: {
-                ref: ref
-            },
-            orderBy: {
-                seq: "asc"
+                OR: imoveisArray
             }
         })
 
-
         images.map((item) => {
-            imovel["images"].push(item.foto.toString().replace('http://static.nidoimovel.com.br', 'https://s3.amazonaws.com/static.nidoimovel.com.br'))
+            if (!imoveisObject[item.ref].image) {
+                imoveisObject[item.ref].image = item.foto.toString().replace('http://static.nidoimovel.com.br', 'https://s3.amazonaws.com/static.nidoimovel.com.br')
+        
+            }
         })
 
-        return imovel
+        return Object.values(imoveisObject)
     }
 }
 
-export { GetImovelService }
+export { ListImoveisService }

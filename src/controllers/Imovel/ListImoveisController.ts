@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ListImoveisService } from '../../services/Home/ListImoveisService';
+import { ListImoveisService } from '../../services/Imovel/ListImoveisService';
 
 class ListImoveisController {
     async handle(req: Request, res: Response) {

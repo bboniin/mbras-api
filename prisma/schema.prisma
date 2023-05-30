@@ -7,46 +7,252 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model blog_commentmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_id BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([comment_id], map: "comment_id")
+  @@index([meta_key(length: 191)], map: "meta_key")
+}
+
+model blog_comments {
+  comment_ID           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_post_ID      BigInt   @default(0) @db.UnsignedBigInt
+  comment_author       String   @db.TinyText
+  comment_author_email String   @default("") @db.VarChar(100)
+  comment_author_url   String   @default("") @db.VarChar(200)
+  comment_author_IP    String   @default("") @db.VarChar(100)
+  comment_date         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  comment_date_gmt     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  comment_content      String   @db.Text
+  comment_karma        Int      @default(0)
+  comment_approved     String   @default("1") @db.VarChar(20)
+  comment_agent        String   @default("") @db.VarChar(255)
+  comment_type         String   @default("") @db.VarChar(20)
+  comment_parent       BigInt   @default(0) @db.UnsignedBigInt
+  user_id              BigInt   @default(0) @db.UnsignedBigInt
+
+  @@index([comment_approved, comment_date_gmt], map: "comment_approved_date_gmt")
+  @@index([comment_author_email(length: 10)], map: "comment_author_email")
+  @@index([comment_date_gmt], map: "comment_date_gmt")
+  @@index([comment_parent], map: "comment_parent")
+  @@index([comment_post_ID], map: "comment_post_ID")
+}
+
+model blog_duplicator_packages {
+  id      BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  name    String   @db.VarChar(250)
+  hash    String   @db.VarChar(50)
+  status  Int
+  created DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  owner   String   @db.VarChar(60)
+  package String   @db.LongText
+
+  @@index([hash], map: "hash")
+}
+
+model blog_links {
+  link_id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  link_url         String   @default("") @db.VarChar(255)
+  link_name        String   @default("") @db.VarChar(255)
+  link_image       String   @default("") @db.VarChar(255)
+  link_target      String   @default("") @db.VarChar(25)
+  link_description String   @default("") @db.VarChar(255)
+  link_visible     String   @default("Y") @db.VarChar(20)
+  link_owner       BigInt   @default(1) @db.UnsignedBigInt
+  link_rating      Int      @default(0)
+  link_updated     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  link_rel         String   @default("") @db.VarChar(255)
+  link_notes       String   @db.MediumText
+  link_rss         String   @default("") @db.VarChar(255)
+
+  @@index([link_visible], map: "link_visible")
+}
+
+model blog_options {
+  option_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  option_name  String @unique(map: "option_name") @default("")
+  option_value String @db.LongText
+  autoload     String @default("yes") @db.VarChar(20)
+}
+
+model blog_postmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  post_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([post_id], map: "post_id")
+}
+
+model blog_posts {
+  ID                    BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  post_author           BigInt   @default(0) @db.UnsignedBigInt
+  post_date             DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_date_gmt         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_content          String   @db.LongText
+  post_title            String   @db.Text
+  post_excerpt          String   @db.Text
+  post_status           String   @default("publish") @db.VarChar(20)
+  comment_status        String   @default("open") @db.VarChar(20)
+  ping_status           String   @default("open") @db.VarChar(20)
+  post_password         String   @default("") @db.VarChar(255)
+  post_name             String   @default("") @db.VarChar(200)
+  to_ping               String   @db.Text
+  pinged                String   @db.Text
+  post_modified         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_modified_gmt     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_content_filtered String   @db.LongText
+  post_parent           BigInt   @default(0) @db.UnsignedBigInt
+  guid                  String   @default("") @db.VarChar(255)
+  menu_order            Int      @default(0)
+  post_type             String   @default("post") @db.VarChar(20)
+  post_mime_type        String   @default("") @db.VarChar(100)
+  comment_count         BigInt   @default(0)
+
+  @@index([post_author], map: "post_author")
+  @@index([post_name(length: 191)], map: "post_name")
+  @@index([post_parent], map: "post_parent")
+  @@index([post_type, post_status, post_date, ID], map: "type_status_date")
+}
+
+model blog_term_relationships {
+  object_id        BigInt @default(0) @db.UnsignedBigInt
+  term_taxonomy_id BigInt @default(0) @db.UnsignedBigInt
+  term_order       Int    @default(0)
+
+  @@id([object_id, term_taxonomy_id])
+  @@index([term_taxonomy_id], map: "term_taxonomy_id")
+}
+
+model blog_term_taxonomy {
+  term_taxonomy_id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id          BigInt @default(0) @db.UnsignedBigInt
+  taxonomy         String @default("") @db.VarChar(32)
+  description      String @db.LongText
+  parent           BigInt @default(0) @db.UnsignedBigInt
+  count            BigInt @default(0)
+
+  @@unique([term_id, taxonomy], map: "term_id_taxonomy")
+  @@index([taxonomy], map: "taxonomy")
+}
+
+model blog_termmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([term_id], map: "term_id")
+}
+
+model blog_terms {
+  term_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String @default("") @db.VarChar(200)
+  slug       String @default("") @db.VarChar(200)
+  term_group BigInt @default(0)
+
+  @@index([name(length: 191)], map: "name")
+  @@index([slug(length: 191)], map: "slug")
+}
+
+model blog_usermeta {
+  umeta_id   BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([user_id], map: "user_id")
+}
+
+model blog_users {
+  ID                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_login          String   @default("") @db.VarChar(60)
+  user_pass           String   @default("") @db.VarChar(255)
+  user_nicename       String   @default("") @db.VarChar(50)
+  user_email          String   @default("") @db.VarChar(100)
+  user_url            String   @default("") @db.VarChar(100)
+  user_registered     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  user_activation_key String   @default("") @db.VarChar(255)
+  user_status         Int      @default(0)
+  display_name        String   @default("") @db.VarChar(250)
+
+  @@index([user_email], map: "user_email")
+  @@index([user_login], map: "user_login_key")
+  @@index([user_nicename], map: "user_nicename")
+}
+
+model gdr_dados {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  classe    String? @db.VarChar(50)
+  titulo    String? @db.VarChar(250)
+  descricao Bytes?  @db.Blob
+  data      String? @db.Text
+  link      String? @db.VarChar(250)
+  imagem    String? @db.VarChar(250)
+  imagem2   String? @db.VarChar(250)
+  ordem     Int?
+  extra1    String? @db.VarChar(250)
+  extra2    String? @db.VarChar(250)
+  status    Int?
+  galeria   Bytes?  @db.Blob
+}
+
+model gdr_user {
+  id    Int     @id @default(autoincrement()) @db.UnsignedInt
+  user  String? @db.VarChar(50)
+  pass  Bytes?  @db.Blob
+  nivel String? @db.VarChar(50)
+
+  @@index([user], map: "user")
+}
+
 model i_bairro {
-  codbairro Int    @id
-  codcidade Int
-  maxcep    String @db.VarChar(8)
-  descricao String @db.VarChar(72)
-  nomeuso   String @db.VarChar(72)
-  situacao  String @db.VarChar(10)
+  codbairro Int     @id
+  codcidade Int?
+  descricao String? @db.VarChar(72)
+  nomeuso   String? @db.VarChar(72)
+  avgcep    String  @default("") @db.VarChar(8)
+  maxcep    String? @db.VarChar(8)
+  situacao  String? @db.VarChar(10)
 }
 
 model i_cidade {
-  codcidade   Int     @id
-  codestado   Int
-  descricao   String  @db.VarChar(50)
-  cep         String  @db.VarChar(8)
-  situacao    String  @db.VarChar(10)
-  siglaestado String  @db.VarChar(2)
-  imovel      Boolean
+  codcidade   Int      @id
+  codestado   Int?
+  descricao   String?  @db.VarChar(50)
+  cep         String?  @db.VarChar(8)
+  situacao    String?  @db.VarChar(10)
+  siglaestado String?  @db.VarChar(2)
+  imovel      Boolean?
 }
 
 model i_estado {
-  codestado Int    @id
-  codpais   Int
-  descricao String @db.VarChar(50)
-  sigla     String @db.VarChar(2)
-  situacao  String @db.VarChar(10)
+  codestado Int     @id
+  codpais   Int?
+  descricao String? @db.VarChar(50)
+  sigla     String? @db.VarChar(2)
+  situacao  String? @db.VarChar(10)
 }
 
 model i_pais {
-  codpais   Int    @id
-  descricao String @db.VarChar(50)
-  situacao  String @db.VarChar(10)
+  codpais   Int     @id
+  descricao String? @db.VarChar(50)
+  situacao  String? @db.VarChar(10)
 }
 
 model i_regiao {
-  codregiao Int    @id
-  codcidade Int
-  macrozona String @db.VarChar(20)
-  zona      String @db.VarChar(20)
-  descricao String @db.VarChar(50)
-  situacao  String @db.VarChar(10)
+  codregiao Int     @id
+  codcidade Int?
+  macrozona String? @db.VarChar(20)
+  zona      String? @db.VarChar(20)
+  descricao String? @db.VarChar(50)
+  situacao  String? @db.VarChar(10)
 
   @@unique([codcidade, descricao], map: "codcidade")
 }
@@ -54,55 +260,55 @@ model i_regiao {
 model i_regiaobairro {
   codregiao Int
   codbairro BigInt
-  situacao  String @db.VarChar(10)
+  situacao  String? @db.VarChar(10)
 
   @@id([codregiao, codbairro])
   @@index([codbairro], map: "codbairro")
 }
 
 model nido_migration {
-  id        Int      @id @default(autoincrement())
-  migration String   @db.VarChar(255)
-  date      DateTime @db.DateTime(0)
+  id        Int       @id @default(autoincrement())
+  migration String?   @db.VarChar(255)
+  date      DateTime? @db.DateTime(0)
 
   @@index([date], map: "date")
 }
 
 model w_agencia {
-  codagencia  String @id @db.VarChar(2)
-  nomeempresa String @db.VarChar(50)
-  nome        String @db.VarChar(50)
-  razaosocial String @db.VarChar(70)
-  cep         String @db.VarChar(8)
-  endereco    String @db.VarChar(70)
-  numero      Int
-  bairro      String @db.VarChar(50)
-  complemento String @db.VarChar(50)
-  cidade      String @db.VarChar(50)
-  estado      String @db.VarChar(2)
-  ddd1        String @db.VarChar(2)
-  telefone1   String @db.VarChar(10)
-  ddd2        String @db.VarChar(2)
-  telefone2   String @db.VarChar(10)
-  dddfax      String @db.VarChar(2)
-  fax         String @db.VarChar(10)
-  email       String @db.VarChar(50)
-  creci       String @db.VarChar(20)
-  situacao    String @db.VarChar(10)
+  codagencia  String  @id @db.VarChar(2)
+  nomeempresa String? @db.VarChar(50)
+  nome        String? @db.VarChar(50)
+  razaosocial String? @db.VarChar(70)
+  cep         String? @db.VarChar(8)
+  endereco    String? @db.VarChar(70)
+  numero      Int?
+  bairro      String? @db.VarChar(50)
+  complemento String? @db.VarChar(50)
+  cidade      String? @db.VarChar(50)
+  estado      String? @db.VarChar(2)
+  ddd1        String? @db.VarChar(2)
+  telefone1   String? @db.VarChar(10)
+  ddd2        String? @db.VarChar(2)
+  telefone2   String? @db.VarChar(10)
+  dddfax      String? @db.VarChar(2)
+  fax         String? @db.VarChar(10)
+  email       String? @db.VarChar(50)
+  creci       String? @db.VarChar(20)
+  situacao    String? @db.VarChar(10)
 }
 
 model w_classificacao {
-  codclassificacao Int    @id
-  descricao        String @db.VarChar(100)
-  situacao         String @db.VarChar(10)
+  codclassificacao Int     @id
+  descricao        String? @db.VarChar(100)
+  situacao         String? @db.VarChar(10)
 }
 
 model w_comunicacao {
-  id            Int                  @id @default(autoincrement())
-  tipocomunicao Int                  @db.TinyInt
-  dados_contato Bytes                @db.Blob
-  status        w_comunicacao_status
-  datahora      DateTime             @db.DateTime(0)
+  id            Int                   @id @default(autoincrement())
+  tipocomunicao Int?                  @db.TinyInt
+  dados_contato Bytes?                @db.Blob
+  status        w_comunicacao_status?
+  datahora      DateTime?             @db.DateTime(0)
 
   @@index([datahora], map: "datahora")
   @@index([status], map: "status")
@@ -110,107 +316,107 @@ model w_comunicacao {
 }
 
 model w_foto {
-  ref      String  @db.VarChar(12)
+  ref      String   @db.VarChar(12)
   seq      Int
-  titulo   String  @db.VarChar(30)
-  foto     Bytes
-  destaque Boolean
+  titulo   String?  @db.VarChar(30)
+  foto     Bytes?
+  destaque Boolean?
 
   @@id([ref, seq])
   @@index([ref], map: "ref")
 }
 
 model w_imovel {
-  ref                              String   @id @db.VarChar(12)
-  dataatualizacao                  DateTime @db.DateTime(0)
-  datacadastro                     DateTime @db.DateTime(0)
-  dataalteracaofoto                DateTime @db.DateTime(0)
-  dataalteracaofoto_empreendimento DateTime @db.DateTime(0)
-  datahora_pub                     DateTime @db.DateTime(0)
-  codagencia                       String   @db.VarChar(2)
-  codagencia_publicacao            String   @db.VarChar(2)
-  codtipoimovel                    Int
-  codtiposimplificado              Int
-  tipoimovel                       String   @db.VarChar(64)
-  tiposimplificado                 String   @db.VarChar(64)
-  codtiponegocio                   String   @db.VarChar(1)
-  codtipoutilizacao                String   @db.Char(1)
-  residencial                      String   @db.Char(1)
-  comercial                        String   @db.Char(1)
-  rural                            String   @db.Char(1)
-  industrial                       String   @db.Char(1)
-  codtipoorigem                    Int
-  lancamento                       Int
-  cep                              String   @db.VarChar(8)
-  logradouro                       String   @db.VarChar(25)
-  endereco                         String   @db.VarChar(512)
-  numero                           Bytes    @db.Blob
-  codcidade                        Int
-  cidade                           String   @db.VarChar(64)
-  estado                           String   @db.Char(2)
-  regiao                           String   @db.VarChar(72)
-  bairro                           String   @db.VarChar(72)
-  codbairro                        Int
-  codregiao1                       String   @db.VarChar(72)
-  codregiao2                       String   @db.VarChar(72)
-  codregiao3                       String   @db.VarChar(72)
-  valor                            Float
-  disponivelvenda                  Boolean
+  ref                              String    @id @db.VarChar(12)
+  dataatualizacao                  DateTime? @db.DateTime(0)
+  codagencia                       String?   @db.VarChar(2)
+  codtipoimovel                    Int?
+  tipoimovel                       String?   @db.VarChar(64)
+  codtiponegocio                   String?   @db.VarChar(1)
+  codtipoutilizacao                String?   @db.Char(1)
+  codtipoorigem                    Int?
+  lancamento                       Int?
+  cep                              String?   @db.VarChar(8)
+  logradouro                       String?   @db.VarChar(25)
+  endereco                         String?   @db.VarChar(512)
+  numero                           Bytes?    @db.Blob
+  codcidade                        Int?
+  cidade                           String?   @db.VarChar(64)
+  estado                           String?   @db.Char(2)
+  regiao                           String?   @db.VarChar(72)
+  bairro                           String?   @db.VarChar(72)
+  codbairro                        Int?
+  codregiao1                       String?   @db.VarChar(72)
+  codregiao2                       String?   @db.VarChar(72)
+  codregiao3                       String?   @db.VarChar(72)
+  valor                            Float?
+  disponivelvenda                  Boolean?
   valorvenda                       Float
-  valorvendam2                     Float    @db.Float
-  disponivellocacao                Boolean
+  valorvendam2                     Float?    @db.Float
+  disponivellocacao                Boolean?
   valorlocacao                     Float
-  periodolocacao                   String   @db.VarChar(32)
-  valorlocacaom2                   Float    @db.Float
-  disponiveltemporada              Boolean
-  valortemporada                   Float
-  qtdepessoas                      Int
+  valorlocacaom2                   Float?    @db.Float
   condominio                       Float
-  iptu                             Float
-  tipoiptu                         String   @db.VarChar(10)
-  dormitorios                      Int      @db.SmallInt
-  suites                           Int      @db.SmallInt
-  vagas                            Int      @db.SmallInt
-  areatotal                        Int
-  areautil                         Int
-  metragem                         String   @db.VarChar(20)
-  promocao                         String   @db.Text
-  titulo                           String   @db.Text
-  detunidade                       String   @db.Text
-  detcondominio                    String   @db.Text
-  tag                              String   @db.Text
-  comfoto                          Boolean
-  quantidade_fotos                 Int
-  comtexto                         Boolean
-  comfinanciamento                 Boolean
-  valorentrada                     Float
-  valorparcela                     Float
-  situacao                         Int
-  situacao_imovel                  String   @db.VarChar(20)
-  salas                            Int      @db.SmallInt
-  codprofissional                  String   @db.VarChar(6)
-  empreendimento                   String   @db.VarChar(150)
-  complemento                      String   @db.VarChar(150)
-  video                            String   @db.VarChar(1024)
-  latitude                         Float
-  longitude                        Float
-  condpagamento                    String   @db.Text
-  imediacoes                       String   @db.VarChar(50)
-  codclassificacao                 Int
-  banheiros                        Int
-  exclusividade                    Boolean
-  plantao                          Boolean
-  remanescente                     Boolean
-  aceitapermuta                    Boolean
-  possuirenda                      Boolean
-  edificio                         String   @db.VarChar(150)
-  situacao_mobilia                 String   @db.VarChar(32)
-  codigo_anterior                  String   @db.VarChar(20)
-  textoimpressao                   String   @db.VarChar(2048)
-  regra_sistema                    String   @db.VarChar(3)
-  imovel_desabilitado              Boolean  @default(false)
-  caracteristica_unidade           String   @db.VarChar(512)
-  caracteristica_condominio        String   @db.VarChar(512)
+  iptu                             Float?
+  dormitorios                      Int?      @db.SmallInt
+  suites                           Int?      @db.SmallInt
+  vagas                            Int?      @db.SmallInt
+  areatotal                        Int?
+  areautil                         Int?
+  metragem                         String?   @db.VarChar(20)
+  promocao                         String?   @db.Text
+  detunidade                       String?   @db.Text
+  detcondominio                    String?   @db.Text
+  tag                              String?   @db.Text
+  comfoto                          Boolean?
+  comtexto                         Boolean?
+  comfinanciamento                 Boolean?
+  valorentrada                     Float?
+  valorparcela                     Float?
+  situacao                         Int?
+  salas                            Int?      @db.SmallInt
+  codprofissional                  String?   @db.VarChar(6)
+  empreendimento                   String?   @db.VarChar(150)
+  complemento                      String?   @db.VarChar(150)
+  video                            String?   @db.VarChar(1024)
+  latitude                         Float?
+  longitude                        Float?
+  condpagamento                    String?   @db.Text
+  imediacoes                       String?   @db.VarChar(50)
+  codclassificacao                 Int?
+  banheiros                        Int?
+  exclusividade                    Boolean?
+  plantao                          Boolean?
+  remanescente                     Boolean?
+  aceitapermuta                    Boolean?
+  possuirenda                      Boolean?
+  edificio                         String?   @db.VarChar(150)
+  titulo                           String?   @db.Text
+  textoimpressao                   String?   @db.VarChar(2048)
+  datahora_pub                     DateTime? @db.DateTime(0)
+  codagencia_publicacao            String?   @db.VarChar(2)
+  quantidade_fotos                 Int?
+  tipoiptu                         String?   @db.VarChar(10)
+  regra_sistema                    String?   @db.VarChar(3)
+  dataalteracaofoto                DateTime? @db.DateTime(0)
+  situacao_imovel                  String?   @db.VarChar(20)
+  datacadastro                     DateTime? @db.DateTime(0)
+  disponiveltemporada              Boolean?
+  valortemporada                   Float?
+  qtdepessoas                      Int?
+  imovel_desabilitado              Boolean?  @default(false)
+  periodolocacao                   String?   @db.VarChar(32)
+  situacao_mobilia                 String?   @db.VarChar(32)
+  caracteristica_unidade           String?   @db.VarChar(512)
+  caracteristica_condominio        String?   @db.VarChar(512)
+  codigo_anterior                  String?   @db.VarChar(20)
+  dataalteracaofoto_empreendimento DateTime? @db.DateTime(0)
+  residencial                      String?   @db.Char(1)
+  comercial                        String?   @db.Char(1)
+  rural                            String?   @db.Char(1)
+  industrial                       String?   @db.Char(1)
+  codtiposimplificado              Int?
+  tiposimplificado                 String?   @db.VarChar(64)
 
   @@index([codbairro], map: "codbairro")
   @@index([codclassificacao], map: "codclassificacao")
@@ -227,7 +433,7 @@ model w_imovel_poi_distancia {
   ref       String @db.VarChar(12)
   tipo      String @db.VarChar(48)
   nome      String @db.VarChar(72)
-  distancia Float
+  distancia Float?
 
   @@id([ref, tipo, nome])
   @@index([nome], map: "nome")
@@ -238,136 +444,154 @@ model w_imovel_poi_distancia {
 
 model w_imovel_pois {
   ref  String @id @db.VarChar(12)
-  pois Bytes  @db.Blob
+  pois Bytes? @db.Blob
+
+  @@index([ref], map: "ref")
 }
 
 model w_imovelprofissional {
-  ref             String @db.VarChar(12)
-  relacao         String @db.VarChar(60)
-  codprofissional String @db.VarChar(20)
-  codprofagencia  String @db.VarChar(20)
-  codprofequipe   String @db.VarChar(20)
-  ordem           Int
+  ref             String  @db.VarChar(12)
+  relacao         String  @db.VarChar(60)
+  codprofissional String  @db.VarChar(20)
+  codprofequipe   String? @db.VarChar(20)
+  codprofagencia  String? @db.VarChar(20)
+  ordem           Int?
 
   @@id([ref, relacao, codprofissional])
   @@index([ref], map: "ref")
 }
 
+model w_latlong {
+  ref           String   @id @db.VarChar(12)
+  latitude      Float
+  longitude     Float
+  ultimo_acesso DateTime @db.Date
+}
+
 model w_lead {
   id                    Int              @id @default(autoincrement())
+  referencia            String?          @db.Char(50)
+  codagencia_publicacao String?          @db.VarChar(2)
+  tipoimovel            Int?
+  codtipoutilizacao     String?          @db.Char(1)
+  codregiao             String?          @db.VarChar(72)
+  disponivelvenda       Int?             @db.TinyInt
+  valorvenda            Float?
+  disponivellocacao     Int?             @db.TinyInt
+  valorlocacao          Float?
+  cliente               String?          @db.VarChar(100)
+  email                 String?          @db.VarChar(200)
+  telefone              String?          @db.Char(20)
+  mensagem              String?          @db.Text
+  datahora              DateTime?        @db.DateTime(0)
+  status                w_lead_status?
+  celular               String?          @db.Char(20)
+  gostaria_de           String?          @db.VarChar(200)
+  tipouso               String?          @db.VarChar(200)
   tipo_lead             w_lead_tipo_lead @default(Unidade)
-  referencia            String           @db.Char(50)
-  codagencia_publicacao String           @db.VarChar(2)
-  tipoimovel            Int
-  codtipoutilizacao     String           @db.Char(1)
-  codregiao             String           @db.VarChar(72)
-  disponivelvenda       Int              @db.TinyInt
-  valorvenda            Float
-  disponivellocacao     Int              @db.TinyInt
-  valorlocacao          Float
-  cliente               String           @db.VarChar(100)
-  email                 String           @db.VarChar(200)
-  telefone              String           @db.Char(20)
-  celular               String           @db.Char(20)
-  gostaria_de           String           @db.VarChar(200)
-  tipouso               String           @db.VarChar(200)
-  mensagem              String           @db.Text
-  datahora              DateTime         @db.DateTime(0)
-  status                w_lead_status
 
   @@index([datahora], map: "datahora")
   @@index([status], map: "status")
 }
 
 model w_link {
-  ref    String @db.VarChar(12)
+  ref    String  @db.VarChar(12)
   ordem  Int
-  titulo String @db.VarChar(64)
-  tipo   String @db.VarChar(64)
-  url    String @db.VarChar(20148)
+  titulo String? @db.VarChar(64)
+  tipo   String? @db.VarChar(64)
+  url    String? @db.VarChar(20148)
 
   @@id([ref, ordem])
   @@index([ref], map: "ref")
 }
 
 model w_pregao {
-  ref          String   @id @db.VarChar(13)
-  ref_imovel   String   @db.VarChar(13)
-  tipo_negocio String   @db.VarChar(10)
-  valorpregao  Float
-  texto        String   @db.Text
-  datahora     DateTime @db.DateTime(0)
-  validade     DateTime @db.DateTime(0)
+  ref          String    @id @db.VarChar(13)
+  ref_imovel   String?   @db.VarChar(13)
+  tipo_negocio String?   @db.VarChar(10)
+  valorpregao  Float?
+  texto        String?   @db.Text
+  datahora     DateTime? @db.DateTime(0)
+  validade     DateTime? @db.DateTime(0)
 }
 
 model w_pregaoprofissional {
-  ref             String @id @db.VarChar(13)
-  codprofissional String @db.VarChar(20)
-  codprofagencia  String @db.VarChar(20)
-  codprofequipe   String @db.VarChar(20)
+  ref             String  @id @db.VarChar(13)
+  codprofissional String? @db.VarChar(20)
+  codprofequipe   String? @db.VarChar(20)
+  codprofagencia  String? @db.VarChar(20)
 }
 
 model w_profissional {
-  codagencia      String @db.VarChar(2)
-  codprofissional String @id @db.VarChar(6)
-  nomeuso         String @db.VarChar(40)
-  foto            Bytes  @db.MediumBlob
-  obs             String @db.Text
-  ddd1            String @db.VarChar(3)
-  fone1           String @db.VarChar(10)
-  ddd2            String @db.VarChar(3)
-  fone2           String @db.VarChar(10)
-  email1          String @db.VarChar(50)
-  email2          String @db.VarChar(50)
-  email3          String @db.VarChar(50)
-  dddcelular      String @db.VarChar(3)
-  celular         String @db.VarChar(10)
-  codequipe       Int
-  equipenome      String @db.VarChar(50)
-  nextel_id       String @db.VarChar(20)
-  creci           String @db.VarChar(10)
-  ramal           String @db.VarChar(5)
-  idiomas         String @db.VarChar(50)
+  codagencia      String? @db.VarChar(2)
+  codprofissional String  @id @db.VarChar(6)
+  nomeuso         String? @db.VarChar(40)
+  foto            Bytes?  @db.MediumBlob
+  obs             String? @db.Text
+  ddd1            String? @db.VarChar(3)
+  fone1           String? @db.VarChar(10)
+  ddd2            String? @db.VarChar(3)
+  fone2           String? @db.VarChar(10)
+  email1          String? @db.VarChar(50)
+  email2          String? @db.VarChar(50)
+  email3          String? @db.VarChar(50)
+  dddcelular      String? @db.VarChar(3)
+  celular         String? @db.VarChar(10)
+  codequipe       Int?
+  equipenome      String? @db.VarChar(50)
+  nextel_id       String? @db.VarChar(20)
+  creci           String? @db.VarChar(10)
+  ramal           String? @db.VarChar(5)
+  idiomas         String? @db.VarChar(50)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model w_selecao {
+  codpesquisa Float  @default(0)
+  ref         String @default("") @db.VarChar(12)
+
+  @@index([codpesquisa, ref], map: "codpesquisa")
+  @@ignore
 }
 
 model w_tag {
-  codtag         Int    @id
-  codtipotag     Int
-  titulo         String @db.VarChar(100)
-  descricao      String @db.Text
-  palavras_chave String @db.Text
-  slug           String @db.VarChar(100)
-  situacao       String @db.VarChar(10)
+  codtag         Int     @id
+  codtipotag     Int?
+  titulo         String? @db.VarChar(100)
+  descricao      String? @db.Text
+  palavras_chave String? @db.Text
+  slug           String? @db.VarChar(100)
+  situacao       String? @db.VarChar(10)
 }
 
 model w_tipoimovel {
-  codtipoimovel       Int    @id
-  descricao           String @db.VarChar(50)
-  descricao_slug      String @db.VarChar(50)
-  codtiposimplificado Int
-  validacao           String @db.Char(1)
-  situacao            String @db.VarChar(10)
-  publicavel          Int    @db.TinyInt
+  codtipoimovel       Int     @id
+  descricao           String? @db.VarChar(50)
+  situacao            String? @db.VarChar(10)
+  codtiposimplificado Int?
+  descricao_slug      String? @db.VarChar(50)
+  publicavel          Int?    @db.TinyInt
+  validacao           String? @db.Char(1)
 }
 
 model w_tipoorigem {
-  codtipoorigem Int    @id
-  descricao     String @db.VarChar(50)
-  situacao      String @db.VarChar(10)
+  codtipoorigem Int     @id
+  descricao     String? @db.VarChar(50)
+  situacao      String? @db.VarChar(10)
 }
 
 model w_tiposimplificado {
-  codtiposimplificado Int    @id
-  descricao           String @db.VarChar(50)
-  descricao_slug      String @db.VarChar(50)
-  situacao            String @db.VarChar(10)
+  codtiposimplificado Int     @id
+  descricao           String? @db.VarChar(50)
+  situacao            String? @db.VarChar(10)
+  descricao_slug      String? @db.VarChar(50)
 }
 
 model w_tipotag {
-  codtipotag Int    @id
-  descricao  String @db.Text
-  slug       String @db.VarChar(100)
-  situacao   String @db.VarChar(10)
+  codtipotag Int     @id
+  descricao  String? @db.Text
+  slug       String? @db.VarChar(100)
+  situacao   String? @db.VarChar(10)
 }
 
 model web_site {
@@ -377,19 +601,510 @@ model web_site {
   texto_home               String? @db.MediumText
   texto_empresa            String? @db.MediumText
   texto_faleconosco        String? @db.Text
-  texto_lgpd               String? @db.Text
   titulo_home              String? @db.VarChar(64)
   informacoes_principais   Bytes?  @db.Blob
   endereco                 Bytes?  @db.Blob
   contatos                 Bytes?  @db.Blob
   informacoes_promocionais Bytes?  @db.Blob
-  paginas_extra            Bytes?
   informacoes_seo          Bytes   @db.Blob
   informacoes_google       Bytes?  @db.Blob
   image_path               String? @db.VarChar(255)
   favicon                  String? @db.VarChar(255)
   banner                   String? @db.VarChar(4092)
   imagem_contato           String? @db.VarChar(255)
+  paginas_extra            Bytes?
+  texto_lgpd               String? @db.Text
+}
+
+model wp_commentmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_id BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([comment_id], map: "comment_id")
+  @@index([meta_key(length: 191)], map: "meta_key")
+}
+
+model wp_comments {
+  comment_ID           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  comment_post_ID      BigInt   @default(0) @db.UnsignedBigInt
+  comment_author       String   @db.TinyText
+  comment_author_email String   @default("") @db.VarChar(100)
+  comment_author_url   String   @default("") @db.VarChar(200)
+  comment_author_IP    String   @default("") @db.VarChar(100)
+  comment_date         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  comment_date_gmt     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  comment_content      String   @db.Text
+  comment_karma        Int      @default(0)
+  comment_approved     String   @default("1") @db.VarChar(20)
+  comment_agent        String   @default("") @db.VarChar(255)
+  comment_type         String   @default("") @db.VarChar(20)
+  comment_parent       BigInt   @default(0) @db.UnsignedBigInt
+  user_id              BigInt   @default(0) @db.UnsignedBigInt
+
+  @@index([comment_approved, comment_date_gmt], map: "comment_approved_date_gmt")
+  @@index([comment_author_email(length: 10)], map: "comment_author_email")
+  @@index([comment_date_gmt], map: "comment_date_gmt")
+  @@index([comment_parent], map: "comment_parent")
+  @@index([comment_post_ID], map: "comment_post_ID")
+}
+
+model wp_links {
+  link_id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  link_url         String   @default("") @db.VarChar(255)
+  link_name        String   @default("") @db.VarChar(255)
+  link_image       String   @default("") @db.VarChar(255)
+  link_target      String   @default("") @db.VarChar(25)
+  link_description String   @default("") @db.VarChar(255)
+  link_visible     String   @default("Y") @db.VarChar(20)
+  link_owner       BigInt   @default(1) @db.UnsignedBigInt
+  link_rating      Int      @default(0)
+  link_updated     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  link_rel         String   @default("") @db.VarChar(255)
+  link_notes       String   @db.MediumText
+  link_rss         String   @default("") @db.VarChar(255)
+
+  @@index([link_visible], map: "link_visible")
+}
+
+model wp_options {
+  option_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  option_name  String @unique(map: "option_name") @default("")
+  option_value String @db.LongText
+  autoload     String @default("yes") @db.VarChar(20)
+}
+
+model wp_postmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  post_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([post_id], map: "post_id")
+}
+
+model wp_posts {
+  ID                    BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  post_author           BigInt   @default(0) @db.UnsignedBigInt
+  post_date             DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_date_gmt         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_content          String   @db.LongText
+  post_title            String   @db.Text
+  post_excerpt          String   @db.Text
+  post_status           String   @default("publish") @db.VarChar(20)
+  comment_status        String   @default("open") @db.VarChar(20)
+  ping_status           String   @default("open") @db.VarChar(20)
+  post_password         String   @default("") @db.VarChar(255)
+  post_name             String   @default("") @db.VarChar(200)
+  to_ping               String   @db.Text
+  pinged                String   @db.Text
+  post_modified         DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_modified_gmt     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  post_content_filtered String   @db.LongText
+  post_parent           BigInt   @default(0) @db.UnsignedBigInt
+  guid                  String   @default("") @db.VarChar(255)
+  menu_order            Int      @default(0)
+  post_type             String   @default("post") @db.VarChar(20)
+  post_mime_type        String   @default("") @db.VarChar(100)
+  comment_count         BigInt   @default(0)
+
+  @@index([post_author], map: "post_author")
+  @@index([post_name(length: 191)], map: "post_name")
+  @@index([post_parent], map: "post_parent")
+  @@index([post_type, post_status, post_date, ID], map: "type_status_date")
+}
+
+model wp_revslider_css {
+  id       Int     @unique(map: "id") @default(autoincrement())
+  handle   String  @db.Text
+  settings String? @db.LongText
+  hover    String? @db.LongText
+  advanced String? @db.LongText
+  params   String  @db.LongText
+}
+
+model wp_revslider_layer_animations {
+  id       Int     @unique(map: "id") @default(autoincrement())
+  handle   String  @db.Text
+  params   String  @db.Text
+  settings String? @db.Text
+}
+
+model wp_revslider_navigations {
+  id       Int     @unique(map: "id") @default(autoincrement())
+  name     String
+  handle   String
+  css      String  @db.LongText
+  markup   String  @db.LongText
+  settings String? @db.LongText
+}
+
+model wp_revslider_sliders {
+  id       Int     @unique(map: "id") @default(autoincrement())
+  title    String  @db.TinyText
+  alias    String? @db.TinyText
+  params   String  @db.LongText
+  settings String? @db.Text
+  type     String  @default("")
+}
+
+model wp_revslider_slides {
+  id          Int    @unique(map: "id") @default(autoincrement())
+  slider_id   Int
+  slide_order Int
+  params      String @db.LongText
+  layers      String @db.LongText
+  settings    String @db.Text
+}
+
+model wp_revslider_static_slides {
+  id        Int    @unique(map: "id") @default(autoincrement())
+  slider_id Int
+  params    String @db.LongText
+  layers    String @db.LongText
+  settings  String @db.Text
+}
+
+model wp_term_relationships {
+  object_id        BigInt @default(0) @db.UnsignedBigInt
+  term_taxonomy_id BigInt @default(0) @db.UnsignedBigInt
+  term_order       Int    @default(0)
+
+  @@id([object_id, term_taxonomy_id])
+  @@index([term_taxonomy_id], map: "term_taxonomy_id")
+}
+
+model wp_term_taxonomy {
+  term_taxonomy_id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id          BigInt @default(0) @db.UnsignedBigInt
+  taxonomy         String @default("") @db.VarChar(32)
+  description      String @db.LongText
+  parent           BigInt @default(0) @db.UnsignedBigInt
+  count            BigInt @default(0)
+
+  @@unique([term_id, taxonomy], map: "term_id_taxonomy")
+  @@index([taxonomy], map: "taxonomy")
+}
+
+model wp_termmeta {
+  meta_id    BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  term_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([term_id], map: "term_id")
+}
+
+model wp_terms {
+  term_id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String @default("") @db.VarChar(200)
+  slug       String @default("") @db.VarChar(200)
+  term_group BigInt @default(0)
+
+  @@index([name(length: 191)], map: "name")
+  @@index([slug(length: 191)], map: "slug")
+}
+
+model wp_usermeta {
+  umeta_id   BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id    BigInt  @default(0) @db.UnsignedBigInt
+  meta_key   String? @db.VarChar(255)
+  meta_value String? @db.LongText
+
+  @@index([meta_key(length: 191)], map: "meta_key")
+  @@index([user_id], map: "user_id")
+}
+
+model wp_users {
+  ID                  BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_login          String   @default("") @db.VarChar(60)
+  user_pass           String   @default("") @db.VarChar(255)
+  user_nicename       String   @default("") @db.VarChar(50)
+  user_email          String   @default("") @db.VarChar(100)
+  user_url            String   @default("") @db.VarChar(100)
+  user_registered     DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  user_activation_key String   @default("") @db.VarChar(255)
+  user_status         Int      @default(0)
+  display_name        String   @default("") @db.VarChar(250)
+
+  @@index([user_email], map: "user_email")
+  @@index([user_login], map: "user_login_key")
+  @@index([user_nicename], map: "user_nicename")
+}
+
+model wp_wfBadLeechers {
+  eMin Int   @db.UnsignedInt
+  IP   Bytes @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  hits Int   @db.UnsignedInt
+
+  @@id([eMin, IP])
+}
+
+model wp_wfBlockedCommentLog {
+  IP          Bytes  @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  countryCode String @db.VarChar(2)
+  blockCount  Int    @default(0) @db.UnsignedInt
+  unixday     Int    @db.UnsignedInt
+  blockType   String @default("gsb") @db.VarChar(50)
+
+  @@id([IP, unixday, blockType])
+}
+
+model wp_wfBlockedIPLog {
+  IP          Bytes  @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  countryCode String @db.VarChar(2)
+  blockCount  Int    @default(0) @db.UnsignedInt
+  unixday     Int    @db.UnsignedInt
+  blockType   String @default("generic") @db.VarChar(50)
+
+  @@id([IP, unixday, blockType])
+}
+
+model wp_wfBlocks7 {
+  id          BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  type        Int     @default(0) @db.UnsignedInt
+  IP          Bytes   @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  blockedTime BigInt
+  reason      String  @db.VarChar(255)
+  lastAttempt Int?    @default(0) @db.UnsignedInt
+  blockedHits Int?    @default(0) @db.UnsignedInt
+  expiration  BigInt  @default(0) @db.UnsignedBigInt
+  parameters  String? @db.Text
+
+  @@index([IP], map: "IP")
+  @@index([expiration], map: "expiration")
+  @@index([type], map: "type")
+}
+
+model wp_wfConfig {
+  name     String               @id @db.VarChar(100)
+  val      Bytes?
+  autoload wp_wfConfig_autoload @default(yes)
+}
+
+model wp_wfCrawlers {
+  IP         Bytes   @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  patternSig Bytes   @db.Binary(16)
+  status     String  @db.Char(8)
+  lastUpdate Int     @db.UnsignedInt
+  PTR        String? @default("") @db.VarChar(255)
+
+  @@id([IP, patternSig])
+}
+
+model wp_wfFileChanges {
+  filenameHash String @id @db.Char(64)
+  file         String @db.VarChar(1000)
+  md5          String @db.Char(32)
+}
+
+model wp_wfFileMods {
+  filenameMD5        Bytes  @id @db.Binary(16)
+  filename           String @db.VarChar(1000)
+  knownFile          Int    @db.UnsignedTinyInt
+  oldMD5             Bytes  @db.Binary(16)
+  newMD5             Bytes  @db.Binary(16)
+  SHAC               Bytes  @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(32)
+  stoppedOnSignature String @default("") @db.VarChar(255)
+  stoppedOnPosition  Int    @default(0) @db.UnsignedInt
+  isSafeFile         String @default("?") @db.VarChar(1)
+}
+
+model wp_wfHits {
+  id                Int     @id @default(autoincrement()) @db.UnsignedInt
+  attackLogTime     Float
+  ctime             Float
+  IP                Bytes?  @db.Binary(16)
+  jsRun             Int?    @default(0) @db.TinyInt
+  statusCode        Int     @default(200)
+  isGoogle          Int     @db.TinyInt
+  userID            Int     @db.UnsignedInt
+  newVisit          Int     @db.UnsignedTinyInt
+  URL               String? @db.Text
+  referer           String? @db.Text
+  UA                String? @db.Text
+  action            String  @default("") @db.VarChar(64)
+  actionDescription String? @db.Text
+  actionData        String? @db.Text
+
+  @@index([attackLogTime], map: "attackLogTime")
+  @@index([ctime], map: "k1")
+  @@index([IP, ctime], map: "k2")
+}
+
+model wp_wfHoover {
+  id      Int     @id @default(autoincrement()) @db.UnsignedInt
+  owner   String? @db.Text
+  host    String? @db.Text
+  path    String? @db.Text
+  hostKey Bytes?  @db.VarBinary(124)
+
+  @@index([hostKey], map: "k2")
+}
+
+model wp_wfIssues {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  time        Int     @db.UnsignedInt
+  lastUpdated Int     @db.UnsignedInt
+  status      String  @db.VarChar(10)
+  type        String  @db.VarChar(20)
+  severity    Int     @db.UnsignedTinyInt
+  ignoreP     String  @db.Char(32)
+  ignoreC     String  @db.Char(32)
+  shortMsg    String  @db.VarChar(255)
+  longMsg     String? @db.Text
+  data        String? @db.Text
+
+  @@index([ignoreC], map: "ignoreC")
+  @@index([ignoreP], map: "ignoreP")
+  @@index([lastUpdated], map: "lastUpdated")
+  @@index([status], map: "status")
+}
+
+model wp_wfKnownFileList {
+  id   Int    @id @default(autoincrement()) @db.UnsignedInt
+  path String @db.Text
+}
+
+model wp_wfLeechers {
+  eMin Int   @db.UnsignedInt
+  IP   Bytes @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  hits Int   @db.UnsignedInt
+
+  @@id([eMin, IP])
+}
+
+model wp_wfLiveTrafficHuman {
+  IP         Bytes @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  identifier Bytes @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(32)
+  expiration Int   @db.UnsignedInt
+
+  @@id([IP, identifier])
+  @@index([expiration], map: "expiration")
+}
+
+model wp_wfLocs {
+  IP          Bytes   @id @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  ctime       Int     @db.UnsignedInt
+  failed      Int     @db.UnsignedTinyInt
+  city        String? @default("") @db.VarChar(255)
+  region      String? @default("") @db.VarChar(255)
+  countryName String? @default("") @db.VarChar(255)
+  countryCode String? @default("") @db.Char(2)
+  lat         Float?  @default(0.0000000) @db.Float
+  lon         Float?  @default(0.0000000) @db.Float
+}
+
+model wp_wfLogins {
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  hitID    Int?
+  ctime    Float
+  fail     Int     @db.UnsignedTinyInt
+  action   String  @db.VarChar(40)
+  username String  @db.VarChar(255)
+  userID   Int     @db.UnsignedInt
+  IP       Bytes?  @db.Binary(16)
+  UA       String? @db.Text
+
+  @@index([hitID], map: "hitID")
+  @@index([IP, fail], map: "k1")
+}
+
+model wp_wfNotifications {
+  id       String @id @default("") @db.VarChar(32)
+  new      Int    @default(1) @db.UnsignedTinyInt
+  category String @db.VarChar(255)
+  priority Int    @default(1000)
+  ctime    Int    @db.UnsignedInt
+  html     String @db.Text
+  links    String @db.Text
+}
+
+model wp_wfPendingIssues {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  time        Int     @db.UnsignedInt
+  lastUpdated Int     @db.UnsignedInt
+  status      String  @db.VarChar(10)
+  type        String  @db.VarChar(20)
+  severity    Int     @db.UnsignedTinyInt
+  ignoreP     String  @db.Char(32)
+  ignoreC     String  @db.Char(32)
+  shortMsg    String  @db.VarChar(255)
+  longMsg     String? @db.Text
+  data        String? @db.Text
+
+  @@index([ignoreC], map: "ignoreC")
+  @@index([ignoreP], map: "ignoreP")
+  @@index([lastUpdated], map: "lastUpdated")
+  @@index([status], map: "status")
+}
+
+model wp_wfReverseCache {
+  IP         Bytes  @id @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  host       String @db.VarChar(255)
+  lastUpdate Int    @db.UnsignedInt
+}
+
+model wp_wfSNIPCache {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  IP         String   @default("") @db.VarChar(45)
+  expiration DateTime @default(now()) @db.Timestamp(0)
+  body       String   @default("") @db.VarChar(255)
+  count      Int      @default(0) @db.UnsignedInt
+  type       Int      @default(0) @db.UnsignedInt
+
+  @@index([IP], map: "IP")
+  @@index([expiration], map: "expiration")
+  @@index([type], map: "type")
+}
+
+model wp_wfScanners {
+  eMin Int   @db.UnsignedInt
+  IP   Bytes @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  hits Int   @db.UnsignedSmallInt
+
+  @@id([eMin, IP])
+}
+
+model wp_wfStatus {
+  id    BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  ctime Float
+  level Int    @db.UnsignedTinyInt
+  type  String @db.Char(5)
+  msg   String @db.VarChar(1000)
+
+  @@index([ctime], map: "k1")
+  @@index([type], map: "k2")
+}
+
+model wp_wfVulnScanners {
+  IP    Bytes @id @default(dbgenerated("('\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0')")) @db.Binary(16)
+  ctime Int   @db.UnsignedInt
+  hits  Int   @db.UnsignedInt
+}
+
+model wp_yoast_seo_links {
+  id             BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  url            String @db.VarChar(255)
+  post_id        BigInt @db.UnsignedBigInt
+  target_post_id BigInt @db.UnsignedBigInt
+  type           String @db.VarChar(8)
+
+  @@index([post_id, type], map: "link_direction")
+}
+
+model wp_yoast_seo_meta {
+  object_id           BigInt @unique(map: "object_id") @db.UnsignedBigInt
+  internal_link_count Int?   @db.UnsignedInt
+  incoming_link_count Int?   @db.UnsignedInt
+}
+
+enum wp_wfConfig_autoload {
+  no
+  yes
 }
 
 enum w_comunicacao_status {
@@ -398,13 +1113,13 @@ enum w_comunicacao_status {
   Erro
 }
 
-enum w_lead_tipo_lead {
-  Unidade
-  Empreendimento
-}
-
 enum w_lead_status {
   Pendente
   Processado
   Erro
+}
+
+enum w_lead_tipo_lead {
+  Unidade
+  Empreendimento
 }

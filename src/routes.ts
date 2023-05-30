@@ -5,13 +5,17 @@ import { isAuthenticated } from './middlewares/isAuthenticated'
 
 import uploadConfig from './config/multer'
 
-import { ListImoveisController } from './controllers/Home/ListImoveisController'
+import { ListImoveisController } from './controllers/Imovel/ListImoveisController'
 import { GetImovelController } from './controllers/Imovel/GetImovelController'
+import { GetBlogController } from './controllers/Home/GetBlogController'
+import { GetProprietiesHomeController } from './controllers/Home/GetProprietiesHomeController'
 
 const upload = multer(uploadConfig)
 
 const router = Router()
 
+router.get('/destaques', new GetProprietiesHomeController().handle)
+router.get('/blog', new GetBlogController().handle)
 router.get('/imoveis', new ListImoveisController().handle)
 router.get('/imovel/:ref', new GetImovelController().handle)
 
