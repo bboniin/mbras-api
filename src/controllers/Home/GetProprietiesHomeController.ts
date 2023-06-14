@@ -6,9 +6,9 @@ class GetProprietiesHomeController {
 
         const getProprietiesHomeService = new GetProprietiesHomeService
 
-        const users = await getProprietiesHomeService.execute()
+        const imoveis = await getProprietiesHomeService.execute()
 
-        return res.json(users)
+        return res.json(imoveis)
     }
 }
 

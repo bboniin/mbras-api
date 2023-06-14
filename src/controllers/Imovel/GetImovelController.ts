@@ -7,9 +7,9 @@ class GetImovelController {
 
         const getImovelService = new GetImovelService
 
-        const users = await getImovelService.execute({ref})
+        const imovel = await getImovelService.execute({ref})
 
-        return res.json(users)
+        return res.json(imovel)
     }
 }
 

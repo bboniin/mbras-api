@@ -6,9 +6,9 @@ class GetBlogController {
 
         const getBlogService = new GetBlogService
 
-        const users = await getBlogService.execute()
+        const posts = await getBlogService.execute()
 
-        return res.json(users)
+        return res.json(posts)
     }
 }
 

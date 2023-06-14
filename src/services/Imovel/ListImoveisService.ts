@@ -1,10 +1,201 @@
 import prismaClient from '../../prisma'
+import filterObject from '../../utils/filter';
+
+interface FilterImoveis{
+    tag: string;
+    regiao: string;
+    name: string;
+    minValue: number;
+    maxValue: number;
+    suites: number;
+    dormitorios: number;
+    vagas: number;
+    permuta: boolean;
+    ano: string;
+    minArea: number;
+    maxArea: number;
+    page: number;
+    filtros: string;
+    type: string;
+    order: string;
+    type_imovel: string;
+}
+
 class ListImoveisService {
-    async execute() {
+    async execute({tag, page, regiao, name, type, order, minValue, maxValue, suites, dormitorios, vagas, permuta, ano, minArea, maxArea, filtros, type_imovel}: FilterImoveis) {
+        
+        let filter = {
+            AND: [
+            ],
+        }
+
+        let orderB = {}
+
+        if (type_imovel) {
+            if (!filter["OR"]) {
+                filter["OR"] = filterObject["filtros"][type_imovel]
+            }
+        }
+
+        if (filtros) {
+            filtros.split("/").map((item, idx) => {
+                filter.AND.push({ OR: []});
+                filterObject[item].uni.split("/").map((data) => {
+                    filter.AND[idx]["OR"].push({
+                        caracteristica_unidade: {
+                            contains: `/${data}/`
+                        }
+                    })
+                })
+                filterObject[item].cod.split("/").map((data) => {
+                    filter.AND[idx]["OR"].push({
+                        caracteristica_condominio: {
+                            contains: `/${data}/`
+                        }
+                    })
+                })
+            })
+        }
+
+        switch(order){
+            case "pme" : {
+                orderB = {
+                    valorvenda: "asc"
+                }
+                break;
+            }
+            case "pma" : {
+                orderB = {
+                    valorvenda: "desc"
+                }
+                break;
+            }
+            case "mme" : {
+                orderB = {
+                    areatotal: "asc"
+                }
+                break;
+            }
+            case "mma" : {
+                orderB = {
+                    areatotal: "desc"
+                }
+                break;
+            }
+            case "rec" : {
+                orderB = {
+                    datacadastro : "desc"
+                }
+                break;
+            }
+        }
+
+        if (name) {
+            filter["titulo"] ={
+                contains: name
+            }
+        }
+
+        if (tag) {
+            filter["tag"] ={
+                contains: tag
+            }
+        }
+
+        if (permuta) {
+            filter["aceitapermuta"] =  permuta
+        }
+
+        if (type == "buy") {
+            filter["disponivelvenda"] = true
+        }
+
+        if (type == "locate") {
+            filter["disponivellocacao"] = true
+        }
+        
+        if (minValue) {
+            filter["AND"].push({
+                valor: {
+                    gte: minValue*1000000
+                }
+            })
+        }
+
+        if (maxValue) {
+            filter["AND"].push({
+                valor: {
+                    lte: maxValue*1000000
+                }
+            })
+            
+        }
+
+        if (minArea) {
+            filter["AND"].push({
+                areatotal: {
+                    gte: minArea
+                }
+            })
+        }
+
+        if (maxArea) {
+            filter["AND"].push({
+                areatotal: {
+                    lte: maxArea
+                }
+            })
+            
+        }
+
+        if (vagas) {
+            filter["vagas"] ={
+                gte: vagas
+            }
+        }
+
+        if (suites) {
+            filter["suites"] ={
+                gte: suites
+            }
+        }
+
+        if (dormitorios) {
+            filter["dormitorios"] ={
+                gte: dormitorios
+            }
+        }
+
+        if (regiao) {
+            if (!filter["OR"]) {
+                filter["OR"] = []
+            }
+            filter["OR"].push({
+                regiao: {
+                    contains: regiao
+                }
+            }) 
+            filter["OR"].push({
+                cidade: {
+                    contains: regiao
+                },
+            }) 
+            filter["OR"].push({
+                bairro: {
+                    contains: regiao
+                }
+            }) 
+        }
+
+        const imoveisTotal = await prismaClient.w_imovel.count({
+            where: filter
+        })
 
         const imoveis = await prismaClient.w_imovel.findMany({
+            where: filter,
             take: 30,
-            skip: 0,
+            skip: page,
+            orderBy: orderB,
             select: {
                 valorentrada: true,
                 ref: true,
@@ -103,28 +294,31 @@ class ListImoveisService {
         let imoveisObject = {}
 
         imoveis.map((item) => {
-            imoveisObject[item.ref] = {...item, image: null}
+            imoveisObject[item.ref] = {...item, image: ""}
             imoveisArray.push({
-                ref: {
-                    contains: item.ref
-                }
+                ref: item.ref
             })
         })
 
-        let images = await prismaClient.w_foto.findMany({
-            where: {
-                OR: imoveisArray
-            }
-        })
+        if (imoveis.length != 0) {
+            let images = await prismaClient.w_foto.findMany({
+                where: {
+                    OR: imoveisArray
+                }
+            })
 
-        images.map((item) => {
-            if (!imoveisObject[item.ref].image) {
-                imoveisObject[item.ref].image = item.foto.toString().replace('http://static.nidoimovel.com.br', 'https://s3.amazonaws.com/static.nidoimovel.com.br')
+            images.map((item) => {
+                if (!imoveisObject[item.ref]["image"]) {
+                    imoveisObject[item.ref]["image"] = item.foto ? item.foto.toString().replace('http://static.nidoimovel.com.br', 'https://s3.amazonaws.com/static.nidoimovel.com.br') : ""
+                }
+            })
+        }
         
-            }
-        })
 
-        return Object.values(imoveisObject)
+        return {
+            imoveis: Object.values(imoveisObject),
+            total: imoveisTotal
+        }
     }
 }
 
