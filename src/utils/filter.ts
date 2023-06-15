@@ -14,6 +14,14 @@ export default {
                 tipoimovel: "Apartamento Garden"
             },
             {
+                tipoimovel: "Loft"
+            },
+            {
+                tipoimovel: "Penthouse"
+            }
+        ],
+        "cobertura": [
+            {
                 tipoimovel: "Cobertura Duplex "
             },
             {
@@ -21,12 +29,6 @@ export default {
             },
             {
                 tipoimovel: "Cobertura"
-            },
-            {
-                tipoimovel: "Loft"
-            },
-            {
-                tipoimovel: "Penthouse"
             }
         ],
         "comercial": [
@@ -57,13 +59,15 @@ export default {
         ],
         "casa": [
             {
-                tipoimovel: "Casa em Condomínio  "
-            },
-            {
                 tipoimovel: "Casa de Vila"
             },
             {
                 tipoimovel: "Casa"
+            }
+        ],
+        "casa-em-condominio": [
+            {
+                tipoimovel: "Casa em Condomínio  "
             },
             {
                 tipoimovel: "Casas de Condomínio "
@@ -79,6 +83,12 @@ export default {
                 tipoimovel: "Terreno"
             },
         ],
+    },
+    tags: {
+        "praiacampo": "/1/",
+        "lancamentos": "/9/",
+        "recementregues": "/10/",
+        "para-reformar": "/8/",
     },
     piscina: {
         uni: "16",
@@ -107,5 +117,9 @@ export default {
     quadradetenis: {
         uni: "",
         cod: "18",
+    },
+    varanda: {
+        uni: "103/105",
+        cod: "289",
     }
 };
