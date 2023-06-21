@@ -98,7 +98,7 @@ class ListImoveisService {
 
         if (tag) {
             if(filterObject["tags"][tag])
-            filter["tag"] ={
+            filter["tag"] = {
                 contains: filterObject["tags"][tag]
             }
         }
