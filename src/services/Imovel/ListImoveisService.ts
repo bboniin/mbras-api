@@ -185,6 +185,11 @@ class ListImoveisService {
                 bairro: {
                     contains: regiao
                 }
+            })
+            filter["OR"].push({
+                empreendimento: {
+                    contains: regiao
+                }
             }) 
         }
 
