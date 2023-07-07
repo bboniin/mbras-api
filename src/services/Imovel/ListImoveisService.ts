@@ -200,7 +200,7 @@ class ListImoveisService {
         const imoveis = await prismaClient.w_imovel.findMany({
             where: filter,
             take: 30,
-            skip: page,
+            skip: page*30,
             orderBy: orderB,
             select: {
                 valorentrada: true,
