@@ -72,13 +72,13 @@ class ListImoveisService {
             }
             case "mme" : {
                 orderB = {
-                    areatotal: "asc"
+                    areautil: "asc"
                 }
                 break;
             }
             case "mma" : {
                 orderB = {
-                    areatotal: "desc"
+                    areautil: "desc"
                 }
                 break;
             }
@@ -134,7 +134,7 @@ class ListImoveisService {
 
         if (minArea) {
             filter["AND"].push({
-                areatotal: {
+                areautil: {
                     gte: minArea
                 }
             })
@@ -142,7 +142,7 @@ class ListImoveisService {
 
         if (maxArea) {
             filter["AND"].push({
-                areatotal: {
+                areautil: {
                     lte: maxArea
                 }
             })
