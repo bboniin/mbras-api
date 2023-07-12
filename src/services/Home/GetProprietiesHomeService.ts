@@ -117,6 +117,9 @@ class GetProprietiesHomeService {
         let images = await prismaClient.w_foto.findMany({
             where: {
                 OR: imoveisArray
+            },
+            orderBy: {
+                seq: "asc"
             }
         })
 

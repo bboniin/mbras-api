@@ -12,12 +12,14 @@ import { GetProprietiesHomeController } from './controllers/Home/GetProprietiesH
 import { GetFilterController } from './controllers/Home/GetFilterController'
 import { ListFavoritosController } from './controllers/Imovel/ListFavoritosController'
 import { SendEmailController } from './controllers/User/SendEmailController'
+import { SendPropostaController } from './controllers/User/SendPropostaController'
 
 const upload = multer(uploadConfig)
 
 const router = Router()
 
 router.post('/contato', new SendEmailController().handle)
+router.post('/proposta', new SendPropostaController().handle)
 router.get('/filter', new GetFilterController().handle)
 router.get('/favoritos', new ListFavoritosController().handle)
 router.get('/destaques', new GetProprietiesHomeController().handle)
