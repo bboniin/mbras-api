@@ -91,9 +91,16 @@ class ListImoveisService {
         }
 
         if (name) {
-            filter["titulo"] ={
-                contains: name
+            if (!filter["OR"]) {
+                filter["OR"] = []
             }
+            name.split(",").map((item) => {
+                filter["OR"].push({
+                    promocao: {
+                        contains: item
+                    },
+                }) 
+            })
         }
 
         if (tag) {
@@ -171,26 +178,65 @@ class ListImoveisService {
             if (!filter["OR"]) {
                 filter["OR"] = []
             }
-            filter["OR"].push({
-                regiao: {
-                    contains: regiao
-                }
-            }) 
-            filter["OR"].push({
-                cidade: {
-                    contains: regiao
-                },
-            }) 
-            filter["OR"].push({
-                bairro: {
-                    contains: regiao
-                }
-            })
-            filter["OR"].push({
-                empreendimento: {
-                    contains: regiao
-                }
-            }) 
+            if (regiao.indexOf("-bairro") != -1) {
+                filter["OR"].push({
+                    bairro: {
+                        contains: regiao.replace("-bairro","")
+                    }
+                })
+            } else {
+               if (regiao.indexOf("-cidade") != -1) {
+                filter["OR"].push({
+                    cidade: {
+                        contains: regiao.replace("-cidade","")
+                    },
+                }) 
+               } else {
+                   if (regiao.indexOf("-empreendimento") != -1) {
+                        filter["OR"].push({
+                            empreendimento: {
+                                contains: regiao.replace("-empreendimento","")
+                            }
+                        }) 
+                   } else {
+                    filter["OR"].push({
+                        regiao: {
+                            contains: regiao
+                        },
+                    }) 
+                    filter["OR"].push({
+                        cidade: {
+                            contains: regiao
+                        },
+                    }) 
+                    filter["OR"].push({
+                        codregiao1: {
+                            contains: regiao
+                        },
+                    }) 
+                    filter["OR"].push({
+                        codregiao2: {
+                            contains: regiao
+                        },
+                    }) 
+                    filter["OR"].push({
+                        codregiao3: {
+                            contains: regiao
+                        },
+                    }) 
+                    filter["OR"].push({
+                        bairro: {
+                            contains: regiao
+                        }
+                    })
+                    filter["OR"].push({
+                        empreendimento: {
+                            contains: regiao
+                        }
+                    })  
+            }
+            }
+            }
         }
 
         const imoveisTotal = await prismaClient.w_imovel.count({
