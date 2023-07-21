@@ -20,7 +20,7 @@ class SendEmailService {
             secure: true,
             auth: {
                 user: "rm@mbras.com.br",
-                pass: "ngxxhumjthaakmvn",
+                pass: "YKTKSUF95Bn37bR%",
             },
         });
 

@@ -58,15 +58,27 @@ class ListImoveisService {
         }
 
         switch(order){
-            case "pme" : {
-                orderB = {
-                    valorvenda: "asc"
+            case "pme": {
+                if (type == "buy") {
+                    orderB = {
+                        valorvenda: "asc"
+                    }
+                } else {
+                    orderB = {
+                        valorlocacao: "asc"
+                    }
                 }
                 break;
             }
             case "pma" : {
-                orderB = {
-                    valorvenda: "desc"
+                if (type == "buy") {
+                    orderB = {
+                        valorvenda: "desc"
+                    }
+                } else {
+                    orderB = {
+                        valorlocacao: "desc"
+                    }
                 }
                 break;
             }
@@ -121,22 +133,36 @@ class ListImoveisService {
         if (type == "locate") {
             filter["disponivellocacao"] = true
         }
-        
-        if (minValue) {
-            filter["AND"].push({
-                valor: {
-                    gte: minValue*1000000
-                }
-            })
-        }
-
-        if (maxValue) {
-            filter["AND"].push({
-                valor: {
-                    lte: maxValue*1000000
-                }
-            })
-            
+        if (type == "buy") {
+            if (minValue > 2) {
+                filter["AND"].push({
+                    valorvenda: {
+                        gte: minValue * 1000000
+                    }
+                })
+            }
+            if (maxValue < 100) {
+                filter["AND"].push({
+                    valorvenda: {
+                        lte: maxValue*1000000
+                    }
+                })
+            }
+        } else {
+            if (minValue > 5) {
+                filter["AND"].push({
+                    valorlocacao: {
+                        gte: minValue*1000
+                    }
+                })
+            }
+            if (maxValue < 200) {
+                filter["AND"].push({
+                    valorlocacao: {
+                        lte: maxValue*1000
+                    }
+                })
+            }
         }
 
         if (minArea) {

@@ -86,6 +86,7 @@ export default {
     },
     tags: {
         "praiacampo": "/1/",
+        "lajesecomercial": "/6/",
         "lancamentos": "/9/",
         "recementregues": "/10/",
         "para-reformar": "/8/",
