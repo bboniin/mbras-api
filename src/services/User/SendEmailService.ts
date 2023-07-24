@@ -19,8 +19,8 @@ class SendEmailService {
             port: 465,
             secure: true,
             auth: {
-                user: "rm@mbras.com.br",
-                pass: "YKTKSUF95Bn37bR%",
+                user: "contato@mbras.com.br",
+                pass: "xxpmmtkdsubvppcj",
             },
         });
 
@@ -41,7 +41,7 @@ class SendEmailService {
         await transport.sendMail({
             from: {
                 name: "Contato",
-                address: "rm@mbras.com.br",
+                address: "contato@mbras.com.br",
             },
             to: {
                 name: "MBras",
